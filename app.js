@@ -9,7 +9,7 @@ config({path:"./config/config.env"})
 
 export const app = express()
 app.use(cors({
-  origin: 'process.env.Frontend', // Replace with your allowed origin(s),
+  origin: process.env.Frontend, // Replace with your allowed origin(s),
   credentials: true,
 }));
 app.use(express.json())

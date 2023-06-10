@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+
 const schema = new mongoose.Schema({
     name:String,
     email:{
@@ -13,7 +14,23 @@ const schema = new mongoose.Schema({
     role:{
         type:String,
         default:"Manufacturer"
-    }
+    },
+    reply:[
+        {
+            orderId:{
+                type:String,
+                required:true
+            },
+            price:{
+                type:Number,
+                required:true
+            },
+            Transporter: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Transporter",
+            }
+        }
+    ]
 })
 
 export const Manufacturer = mongoose.model("Manufacturer",schema)

@@ -1,15 +1,14 @@
+import { Manufacturer } from "../Models/Manufacturer.js"
 import { Transporters } from "../Models/Transporters.js"
-import { TransporterMesssage } from "../Models/transporterMessage.js"
 import { sendToken } from "../utils/sendToken.js"
 import bcrypt from "bcrypt"
 
 export const Register = async (req, res) => {
-
+try {
     const { name, email, number, password } = req.body
     let transporters = await Transporters.findOne({ email })
     if (transporters) {
         return res.json({
-            success: false,
             message: "user already exists"
         })
     }
@@ -19,51 +18,83 @@ export const Register = async (req, res) => {
     })
     sendToken(res,Transporters)
     res.status(201).json({
-        success: true,
         message: "Transporter Created"
     })
+} catch (error) {
+    res.status(500).json({
+        message:"Internal server error"
+      })
+}
 }
 
 
 export const Login = async(req,res) => {
-const {email,password} = req.body
+try {
+    const {email,password} = req.body
 const transporters = await Transporters.findOne({email}).select("+password")
 if(!transporters){
     return res.status(400).json({
-        success:true,
         message:"Invalid username or password"
     }) 
 }
 const isMatch = await bcrypt.compare(password,transporters.password)
 if(!isMatch){
     return res.status(400).json({
-        success:false,
         message:"Invalid username or password"
     })
 }
 sendToken(res,transporters)
 res.status(200).json({
-    success:true,
     message:"Logged in as Transporter successfully"
 })
+} catch (error) {
+    res.status(500).json({
+        message:"Internal server error"
+      })
+}
 }
 
 
-export const Logout= async(req,res)=>{
+export const Logout=(req,res)=>{
     res.cookie("token","",{
         expires:new Date(Date.now())
     }).json({
-        success:true,
         message:"Logged out successfully"
     })
 }
 
 
-export const sendMessage = async(req,res)=>{
-    const {price} = req.body
-    const msg = await TransporterMesssage.create({orderId:req.params.id,price})
+export const sendReply = async(req,res)=>{
+    try {
+        const {orderId,price} = req.body
+    let manufacturer = await Manufacturer.findById(req.params.id)
+    manufacturer.reply.push({orderId,price,Transporter:req.user._id})
+    manufacturer.save()
     res.status(201).json({
-        success:true,
-        msg
+        message:"Reply sent"
+    })
+    } catch (error) {
+        res.status(500).json({
+            message:"Internal server error"
+          })
+    }
+}
+
+export const getallmanufacturer = async(req,res)=>{
+    try {
+        const manufacturer = await Manufacturer.find({})
+    res.status(200).json({
+        manufacturer
+    })
+    } catch (error) {
+        res.status(500).json({
+            message:"Internal server error"
+          })
+    }
+}
+
+export const showMessage =async (req,res) =>{
+    res.status(200).json({
+        messages:req.user.messages
     })
 }
